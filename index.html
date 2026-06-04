@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PEREHVAT STORE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #f2f2f7;
+    --card: #ffffff;
+    --accent: #2979ff;
+    --accent2: #1565c0;
+    --text: #1c1c1e;
+    --sub: #6e6e73;
+    --border: #e0e0e0;
+    --badge: #2979ff;
+    --red: #ff3b30;
+    --nav-h: 64px;
+    --header-h: 116px;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* DARK MODE */
+  body.dark { --bg:#1c1c1e; --card:#2c2c2e; --text:#f2f2f7; --sub:#aeaeb2; --border:#3a3a3c; }
+
+  /* HEADER */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--card);
+    padding: 10px 16px 0;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .logo {
+    width: 36px; height: 36px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-weight: 900; color: #fff; font-size: 18px; flex-shrink: 0;
+  }
+  .search-wrap { flex: 1; position: relative; }
+  .search-wrap input {
+    width: 100%; padding: 9px 36px 9px 14px;
+    border-radius: 12px; border: none;
+    background: #f2f2f7; font-size: 15px; color: var(--text);
+    outline: none;
+  }
+  body.dark .search-wrap input { background: #3a3a3c; color: #f2f2f7; }
+  .search-icon {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-size: 16px; pointer-events: none;
+  }
+  .theme-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: #f2f2f7; font-size: 16px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.dark .theme-btn { background: #3a3a3c; }
+
+  /* CATEGORY TABS */
+  .cats {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+  .cats::-webkit-scrollbar { display: none; }
+  .cat-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 13px; font-weight: 500;
+    color: var(--text); white-space: nowrap; cursor: pointer; transition: all .15s;
+  }
+  .cat-btn.active {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 90;
+    background: var(--bg); padding: 10px 16px 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .filter-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 10px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 13px; font-weight: 500;
+    color: var(--text); cursor: pointer;
+  }
+  .count-badge { font-size: 13px; color: var(--sub); }
+  .sort-pills { display: flex; gap: 6px; }
+  .sort-pill {
+    padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 12px; font-weight: 500;
+    color: var(--text); cursor: pointer; white-space: nowrap;
+  }
+  .sort-pill.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  /* PRODUCT GRID */
+  .main-content {
+    padding-top: calc(var(--header-h) + 52px);
+    padding-bottom: calc(var(--nav-h) + 12px);
+    padding-left: 12px; padding-right: 12px;
+  }
+  .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .card {
+    background: var(--card); border-radius: 16px;
+    overflow: hidden; cursor: pointer;
+    transition: transform .1s, box-shadow .1s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  }
+  .card:active { transform: scale(.97); }
+  .card-img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover; background: #e8e8ed;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; position: relative; overflow: hidden;
+  }
+  .card-img-inner {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px;
+  }
+  .badge-new {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--badge); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 3px 7px;
+    border-radius: 6px; letter-spacing: .3px;
+  }
+  .fav-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.85); border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; backdrop-filter: blur(4px);
+  }
+  .fav-btn.active { color: var(--red); }
+  .card-body { padding: 10px 10px 12px; }
+  .card-price { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .card-name { font-size: 12px; color: var(--sub); line-height: 1.3; }
+  .card-city { font-size: 11px; color: var(--sub); margin-top: 4px; display: flex; align-items: center; gap: 3px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h);
+    background: var(--card);
+    display: flex; border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; border: none; background: none;
+    color: var(--sub); font-size: 11px; transition: color .15s;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 22px; }
+  .bot-tag {
+    text-align: center; font-size: 11px; color: var(--sub);
+    padding: 4px; position: fixed; bottom: calc(var(--nav-h) + 2px);
+    left: 0; right: 0; pointer-events: none;
+  }
+
+  /* FILTER MODAL */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4);
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .overlay.show { opacity: 1; pointer-events: all; }
+  .filter-sheet {
+    position: fixed; bottom: -100%; left: 0; right: 0; z-index: 201;
+    background: var(--card); border-radius: 20px 20px 0 0;
+    padding: 20px 20px 40px; transition: bottom .3s ease;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .filter-sheet.show { bottom: 0; }
+  .sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .sheet-title { font-size: 18px; font-weight: 700; }
+  .close-btn { font-size: 22px; color: var(--sub); background: none; border: none; cursor: pointer; }
+  .filter-section { margin-bottom: 20px; }
+  .filter-label { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .cat-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-pill {
+    padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 13px; cursor: pointer;
+  }
+  .cat-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .price-row { display: flex; gap: 10px; }
+  .price-input {
+    flex: 1; padding: 10px 14px; border-radius: 12px;
+    border: 1.5px solid var(--border); font-size: 14px;
+    background: var(--bg); color: var(--text); outline: none;
+  }
+  .city-select {
+    width: 100%; padding: 10px 14px; border-radius: 12px;
+    border: 1.5px solid var(--border); font-size: 14px;
+    background: var(--bg); color: var(--text); outline: none;
+    appearance: none;
+  }
+  .apply-btn {
+    width: 100%; padding: 15px; background: var(--accent); color: #fff;
+    border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+  }
+
+  /* PRODUCT DETAIL PAGE */
+  .page {
+    position: fixed; inset: 0; background: var(--bg); z-index: 300;
+    transform: translateX(100%); transition: transform .25s ease;
+    overflow-y: auto;
+  }
+  .page.show { transform: translateX(0); }
+  .page-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--card); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .back-btn { font-size: 22px; background: none; border: none; cursor: pointer; color: var(--accent); }
+  .page-title { font-size: 17px; font-weight: 600; flex: 1; }
+  .detail-img {
+    width: 100%; height: 260px; background: #e8e8ed;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px;
+  }
+  .detail-body { padding: 16px; }
+  .lot-num { font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+  .detail-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .detail-price { font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 16px; }
+  .seller-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px; background: var(--card); border-radius: 14px;
+    margin-bottom: 16px;
+  }
+  .seller-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+  }
+  .seller-name { font-size: 15px; font-weight: 600; }
+  .seller-sub { font-size: 12px; color: var(--sub); }
+  .detail-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+  .buy-btn {
+    flex: 1; padding: 15px; background: var(--accent); color: #fff;
+    border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+    cursor: pointer;
+  }
+  .fav-detail-btn {
+    width: 52px; height: 52px; border-radius: 14px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fav-detail-btn.active { color: var(--red); border-color: var(--red); }
+  .share-btn {
+    width: 52px; height: 52px; border-radius: 14px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .info-card {
+    background: var(--card); border-radius: 14px; padding: 14px;
+    margin-bottom: 16px;
+  }
+  .info-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .info-row:last-child { border: none; }
+  .info-key { font-size: 13px; color: var(--sub); }
+  .info-val { font-size: 13px; font-weight: 500; }
+
+  /* ORDER PAGE */
+  .step-header {
+    padding: 14px 16px 10px;
+  }
+  .step-label { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
+  .step-title { font-size: 22px; font-weight: 700; }
+  .payment-info {
+    background: var(--card); border-radius: 14px; padding: 14px 16px;
+    margin: 0 16px 16px;
+  }
+  .payment-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .payment-info ul { padding-left: 16px; }
+  .payment-info li { font-size: 13px; color: var(--sub); margin-bottom: 6px; line-height: 1.4; }
+  .payment-info li b { color: var(--text); }
+  .order-summary {
+    background: var(--card); border-radius: 14px; padding: 14px 16px;
+    margin: 0 16px 16px;
+  }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+  .summary-label { font-size: 13px; color: var(--sub); }
+  .summary-val { font-size: 13px; font-weight: 500; }
+  .summary-total { font-size: 20px; font-weight: 800; color: var(--text); }
+  .delivery-options { display: flex; gap: 10px; margin: 0 16px 16px; }
+  .delivery-opt {
+    flex: 1; padding: 14px 10px; border-radius: 14px; border: 2px solid var(--border);
+    background: var(--card); cursor: pointer; text-align: center; transition: all .15s;
+  }
+  .delivery-opt.active { border-color: var(--accent); background: rgba(41,121,255,.06); }
+  .delivery-opt .d-icon { font-size: 24px; margin-bottom: 6px; }
+  .delivery-opt .d-title { font-size: 13px; font-weight: 600; }
+  .delivery-opt .d-sub { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .form-section { padding: 0 16px 16px; }
+  .form-label { font-size: 13px; color: var(--sub); margin-bottom: 6px; font-weight: 500; }
+  .form-input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1.5px solid var(--border); font-size: 15px;
+    background: var(--bg); color: var(--text); outline: none; margin-bottom: 12px;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .next-btn {
+    width: calc(100% - 32px); margin: 0 16px 20px;
+    padding: 15px; background: var(--accent); color: #fff;
+    border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* FAVORITES PAGE */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 20px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 60px; margin-bottom: 16px; }
+  .empty-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .empty-sub { font-size: 14px; color: var(--sub); line-height: 1.5; }
+
+  /* PROFILE PAGE */
+  .profile-section { padding: 0 16px 16px; }
+  .profile-avatar {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; color: #fff; margin: 24px auto 12px;
+  }
+  .profile-name { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .profile-sub { text-align: center; font-size: 14px; color: var(--sub); margin-bottom: 24px; }
+  .menu-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px; background: var(--card); border-radius: 14px;
+    margin-bottom: 8px; cursor: pointer;
+  }
+  .menu-item-left { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+  .menu-item-icon { font-size: 20px; }
+  .menu-chevron { color: var(--sub); font-size: 14px; }
+
+  .page-nav-title {
+    font-size: 20px; font-weight: 700;
+    padding: 16px 16px 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- MAIN CATALOG PAGE -->
+<div id="main">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">P</div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Найти iPhone, iPad, M..." oninput="filterProducts()">
+        <span class="search-icon">🔍</span>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    </div>
+    <div class="cats" id="catTabs"></div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn" onclick="openFilter()">
+      <span>≡</span> Фильтры
+    </button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="count-badge" id="countBadge">0 товаров</span>
+      <div class="sort-pills">
+        <button class="sort-pill active" onclick="setSort('new',this)">Новинки</button>
+        <button class="sort-pill" onclick="setSort('cheap',this)">Дешевле</button>
+        <button class="sort-pill" onclick="setSort('exp',this)">Дороже</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <div class="bot-tag">@perehvat_store_bot</div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('catalog',this)">
+      <span class="nav-icon">🏠</span><span>Каталог</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('favorites',this)">
+      <span class="nav-icon">♥️</span><span>Избранное</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('profile',this)">
+      <span class="nav-icon">👤</span><span>Профиль</span>
+    </button>
+  </div>
+</div>
+
+<!-- FILTER MODAL -->
+<div class="overlay" id="overlay" onclick="closeFilter()"></div>
+<div class="filter-sheet" id="filterSheet">
+  <div class="sheet-header">
+    <span class="sheet-title">Фильтры</span>
+    <button class="close-btn" onclick="closeFilter()">✕</button>
+  </div>
+  <div class="filter-section">
+    <div class="filter-label">Категория</div>
+    <div class="cat-pills" id="filterCatPills"></div>
+  </div>
+  <div class="filter-section">
+    <div class="filter-label">Цена, ₽</div>
+    <div class="price-row">
+      <input type="number" class="price-input" id="priceFrom" placeholder="От">
+      <input type="number" class="price-input" id="priceTo" placeholder="До">
+    </div>
+  </div>
+  <div class="filter-section">
+    <div class="filter-label">Город</div>
+    <select class="city-select" id="citySelect">
+      <option value="">Все города</option>
+    </select>
+  </div>
+  <button class="apply-btn" onclick="applyFilter()">Применить</button>
+</div>
+
+<!-- PRODUCT DETAIL PAGE -->
+<div class="page" id="detailPage">
+  <div class="page-header">
+    <button class="back-btn" onclick="closePage('detailPage')">&#8592;</button>
+    <span class="page-title">PEREHVAT STORE BOT</span>
+    <div class="logo" style="width:28px;height:28px;font-size:14px">P</div>
+  </div>
+  <div class="detail-img" id="detailImg"></div>
+  <div class="detail-body">
+    <div class="lot-num" id="detailLot"></div>
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-price" id="detailPrice"></div>
+    <div class="seller-row">
+      <div class="seller-avatar" id="sellerAvatar">A</div>
+      <div>
+        <div class="seller-name" id="sellerName">Артём Чиков</div>
+        <div class="seller-sub">Продавец</div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="buy-btn" id="buyBtn" onclick="openOrder()"> Купить</button>
+      <button class="fav-detail-btn" id="favDetailBtn" onclick="toggleFavDetail()">&#9825;</button>
+      <button class="share-btn" onclick="shareProduct()">🔗</button>
+    </div>
+    <div class="info-card">
+      <h3>О товаре</h3>
+      <div class="info-row"><span class="info-key">Категория</span><span class="info-val" id="infoCategory"></span></div>
+      <div class="info-row"><span class="info-key">Город</span><span class="info-val" id="infoCity"></span></div>
+      <div class="info-row"><span class="info-key">Состояние</span><span class="info-val" id="infoCondition">Б/у</span></div>
+      <div class="info-row"><span class="info-key">Объявление #</span><span class="info-val" id="infoId"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER PAGE -->
+<div class="page" id="orderPage">
+  <div class="page-header">
+    <button class="back-btn" onclick="closePage('orderPage')">&#8592;</button>
+    <span class="page-title">PEREHVAT STORE BOT</span>
+    <div class="logo" style="width:28px;height:28px;font-size:14px">P</div>
+  </div>
+  <div class="step-header">
+    <div class="step-label" id="stepLabel">ШАГ 1 ИЗ 3</div>
+    <div class="step-title">Оформление покупки</div>
+  </div>
+  <div class="payment-info">
+    <h4>💳 Как проходит оплата</h4>
+    <ul>
+      <li><b>Сейчас</b> — способ получения, ФИО, телефон, ПВЗ СДЭК.</li>
+      <li><b>Затем</b> — сервисный сбор 1000 ₽ через Т-Пэй.</li>
+      <li><b>Потом</b> — оплата продавцу по СБП.</li>
+    </ul>
+  </div>
+  <div class="order-summary">
+    <div class="summary-row">
+      <span class="summary-label">Товар</span>
+      <span class="summary-val" id="orderProduct"></span>
+    </div>
+    <div class="summary-row" style="margin-top:6px">
+      <span style="font-size:14px;font-weight:600">Полная стоимость</span>
+      <span class="summary-total" id="orderPrice"></span>
+    </div>
+  </div>
+  <div style="padding:0 16px 10px;font-size:14px;font-weight:600">Способ получения</div>
+  <div class="delivery-options">
+    <div class="delivery-opt active" id="dOpt1" onclick="selectDelivery('sdek',this)">
+      <div class="d-icon">🚚</div>
+      <div class="d-title">Доставка СДЭК</div>
+      <div class="d-sub">В пункт</div>
+    </div>
+    <div class="delivery-opt" id="dOpt2" onclick="selectDelivery('pickup',this)">
+      <div class="d-icon">🏪</div>
+      <div class="d-title">Самовывоз</div>
+      <div class="d-sub">Оплата на месте</div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="filter-label" style="margin-bottom:12px;font-size:15px;font-weight:700">Ваши данные</div>
+    <div class="form-label">ФИО</div>
+    <input class="form-input" id="orderName" placeholder="Иванов Иван Иванович">
+    <div class="form-label">Телефон</div>
+    <input class="form-input" id="orderPhone" type="tel" placeholder="+7 (900) 000-00-00">
+    <div class="form-label" id="addressLabel">ПВЗ СДЭК (город)</div>
+    <input class="form-input" id="orderAddress" placeholder="Москва">
+  </div>
+  <button class="next-btn" onclick="submitOrder()">Оформить заявку</button>
+</div>
+
+<!-- FAVORITES PAGE -->
+<div class="page" id="favoritesPage">
+  <div class="page-header">
+    <button class="back-btn" onclick="switchTab('catalog', document.querySelector('.nav-item'));closePage('favoritesPage')">&#8592;</button>
+    <span class="page-title">Избранное</span>
+  </div>
+  <div id="favContent"></div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="page" id="profilePage">
+  <div class="page-header">
+    <button class="back-btn" onclick="switchTab('catalog', document.querySelector('.nav-item'));closePage('profilePage')">&#8592;</button>
+    <span class="page-title">Профиль</span>
+  </div>
+  <div class="profile-avatar" id="profileAvatar">👤</div>
+  <div class="profile-name" id="profileName">Пользователь</div>
+  <div class="profile-sub" id="profileSub">Telegram</div>
+  <div class="profile-section">
+    <div class="menu-item" onclick="switchTab('favorites', document.querySelectorAll('.nav-item')[1])">
+      <div class="menu-item-left"><span class="menu-item-icon">♥️</span> Избранное</div>
+      <span class="menu-chevron">&rsaquo;</span>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item-left"><span class="menu-item-icon">📜</span> Мои заказы</div>
+      <span class="menu-chevron">&rsaquo;</span>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item-left"><span class="menu-item-icon">📣</span> О магазине</div>
+      <span class="menu-chevron">&rsaquo;</span>
+    </div>
+    <div class="menu-item">
+      <div class="menu-item-left"><span class="menu-item-icon">💬</span> Связь с продавцом</div>
+      <span class="menu-chevron">&rsaquo;</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// --- PRODUCTS DATA ---
+const PRODUCTS = [
+  {id:1554,name:"iPhone 16, 128gb",price:42500,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1483,name:"iPhone XR 64gb",price:8489,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1470,name:"iPhone 11 Pro Max 64gb",price:11989,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1522,name:"iPhone 12 Pro 128Gb",price:12000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1445,name:"iPhone 12 Pro, 256gb",price:16990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1552,name:"iPhone 12 Pro, 256gb",price:17990,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1183,name:"iPhone 12 Pro Max 128GB",price:19990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1317,name:"iPhone 12 Pro Max 256GB",price:18990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:960,name:"iPhone 13 mini 128 gb Blue",price:17000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1260,name:"iPhone 13 128gb",price:17500,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1546,name:"iPhone 13 128gb",price:13000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1549,name:"iPhone 13 128gb",price:18000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1557,name:"iPhone 13 128gb",price:19000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1258,name:"iPhone 13 256gb Восстановленный",price:27000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1537,name:"iPhone 13 Pro Max 128GB",price:23990,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1257,name:"iPhone 13 Pro Max 128gb Восстановленный",price:33000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1481,name:"iPhone 14 128gb",price:23800,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1542,name:"iPhone 15 128gb Black",price:28000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1455,name:"iPhone 15 plus 128gb",price:35800,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1551,name:"iPhone 15 plus, 128gb",price:35500,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1544,name:"iPhone 15 Pro 128gb",price:33500,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1506,name:"iPhone 15 Pro 256gb",price:37500,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1314,name:"iPhone 15 Pro 1024GB",price:55990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1374,name:"iPhone 15 Pro 1024GB",price:53990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1474,name:"iPhone 15 Pro Max 256GB",price:50000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1559,name:"iPhone 15 Pro Max 256GB",price:49900,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1534,name:"iPhone 15 Pro Max 512gb",price:44000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1545,name:"iPhone 16e 256gb",price:32000,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1533,name:"iPhone 16 128gb",price:42990,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1069,name:"iPhone 16 Plus 128gb",price:38500,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1508,name:"iPhone 16 Plus 512GB",price:53990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1451,name:"iPhone 16 Pro 128GB",price:54500,category:"iPhone",city:"Пенза",isNew:false},
+  {id:480,name:"iPhone 16 Pro 1024gb (новый)",price:87990,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1462,name:"iPhone 16 Pro Max 256gb",price:62000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1463,name:"iPhone 16 Pro Max 256gb",price:64000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1450,name:"iPhone 17 256gb",price:58300,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1515,name:"iPhone 17 256gb",price:54000,category:"iPhone",city:"Пенза",isNew:false},
+  {id:1540,name:"iPhone 17 Pro Comic Orange 256GB",price:80500,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1539,name:"iPhone 17 Pro Silver 256GB",price:78990,category:"iPhone",city:"Пенза",isNew:true},
+  {id:1527,name:"iPad Mini 6 LTE 2021 64GB",price:31500,category:"iPad",city:"Пенза",isNew:true},
+  {id:1555,name:"MacBook Pro 14 2024 M4 16/512GB",price:109990,category:"MacBook",city:"Пенза",isNew:true},
+  {id:1516,name:"Apple Watch 10 42 мм",price:21000,category:"Watch",city:"Пенза",isNew:true},
+  {id:1496,name:"Apple Watch 3 38 mm",price:3500,category:"Watch",city:"Пенза",isNew:false},
+  {id:1362,name:"Apple Watch 7 41 mm",price:8000,category:"Watch",city:"Пенза",isNew:false},
+  {id:1456,name:"Apple Watch Ultra 1 titanium",price:26000,category:"Watch",city:"Пенза",isNew:false},
+  {id:825,name:"AirPods 4",price:11000,category:"AirPods",city:"Пенза",isNew:false},
+  {id:817,name:"AirPods Pro 3",price:20900,category:"AirPods",city:"Пенза",isNew:false},
+  {id:1556,name:"AirPods Max 2",price:25990,category:"AirPods",city:"Пенза",isNew:true},
+  {id:1095,name:"AirPods Max Green Lightning",price:17900,category:"AirPods",city:"Пенза",isNew:false},
+  {id:1032,name:"AirPods Max Lightning",price:14990,category:"AirPods",city:"Пенза",isNew:false},
+  {id:939,name:"AirPods Max Silver Lightning",price:18900,category:"AirPods",city:"Пенза",isNew:false},
+  {id:1100,name:"AirPods Max Silver Lightning",price:19900,category:"AirPods",city:"Пенза",isNew:false},
+  {id:1023,name:"Apple Pencil",price:10500,category:"Прочее",city:"Пенза",isNew:false},
+  {id:1477,name:"Dji Osmo Pocket 3 Creator Edition",price:43990,category:"Прочее",city:"Пенза",isNew:false},
+  {id:1473,name:"Kodak Charmera 1987",price:4500,category:"Прочее",city:"Пенза",isNew:false},
+  {id:1302,name:"Дисплей iPhone 16 Pro Max",price:6989,category:"Прочее",city:"Пенза",isNew:false}
+];
+
+const CATEGORIES = ["Все","iPhone","iPad","MacBook","Watch","AirPods","Прочее"];
+const CAT_EMOJI = {"iPhone":"📱","iPad":"📲","MacBook":"💻","Watch":"⌚","AirPods":"🎧","Прочее":"🔹","Все":"📂"};
+const SELLERS = ["Артём Чиков","Иван Петров","Олег Смирнов","Наташа Козлова","Дима Волкова"];
+
+let activeCategory = "Все";
+let activeSort = "new";
+let filterCat = "Все";
+let filterPriceFrom = 0;
+let filterPriceTo = Infinity;
+let filterCity = "";
+let favorites = JSON.parse(localStorage.getItem("favs")||"{}");
+let currentProduct = null;
+let currentDelivery = "sdek";
+
+// --- INIT ---
+function init() {
+  // Apply TG theme
+  if (tg) {
+    const tc = tg.themeParams;
+    if (tg.colorScheme === 'dark') document.body.classList.add('dark');
+    // Fill profile
+    document.getElementById('profileName').textContent = tg.initDataUnsafe?.user?.first_name || 'Пользователь';
+    document.getElementById('profileSub').textContent = '@' + (tg.initDataUnsafe?.user?.username || 'user');
+    const fn = tg.initDataUnsafe?.user?.first_name || 'U';
+    document.getElementById('profileAvatar').textContent = fn[0].toUpperCase();
+  }
+
+  // Category tabs
+  const tabsEl = document.getElementById('catTabs');
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { activeCategory = cat; filterProducts(); document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+    tabsEl.appendChild(btn);
+  });
+
+  // Filter modal cats
+  const fpEl = document.getElementById('filterCatPills');
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill' + (cat === filterCat ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => { filterCat = cat; fpEl.querySelectorAll('.cat-pill').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+    fpEl.appendChild(btn);
+  });
+
+  // Cities
+  const cities = [...new Set(PRODUCTS.map(p=>p.city))];
+  const sel = document.getElementById('citySelect');
+  cities.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+
+  filterProducts();
+}
+
+function getEmoji(p) {
+  const cat = p.category;
+  if (cat==='iPhone') return '📱';
+  if (cat==='iPad') return '📲';
+  if (cat==='MacBook') return '💻';
+  if (cat==='Watch') return '⌚';
+  if (cat==='AirPods') return '🎧';
+  return '🔹';
+}
+
+function fmtPrice(n) {
+  return n.toLocaleString('ru-RU') + ' ₽';
+}
+
+function filterProducts() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = PRODUCTS.filter(p => {
+    const catOk = activeCategory === 'Все' || p.category === activeCategory;
+    const searchOk = !q || p.name.toLowerCase().includes(q);
+    const priceOk = p.price >= filterPriceFrom && p.price <= filterPriceTo;
+    const cityOk = !filterCity || p.city === filterCity;
+    return catOk && searchOk && priceOk && cityOk;
+  });
+  if (activeSort === 'new') { list = list.filter(p=>p.isNew).concat(list.filter(p=>!p.isNew)); }
+  else if (activeSort === 'cheap') { list.sort((a,b)=>a.price-b.price); }
+  else if (activeSort === 'exp') { list.sort((a,b)=>b.price-a.price); }
+
+  document.getElementById('countBadge').textContent = list.length + ' товаров';
+  renderGrid(list, 'productGrid');
+}
+
+function renderGrid(list, containerId) {
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = '';
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--sub)">🔍 Ничего не найдено</div>';
+    return;
+  }
+  list.forEach(p => {
+    const isFav = !!favorites[p.id];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-img">
+        <div class="card-img-inner">${getEmoji(p)}</div>
+        ${p.isNew ? '<span class="badge-new">НОВИНКА</span>' : ''}
+        <button class="fav-btn ${isFav?'active':''}" onclick="event.stopPropagation();toggleFav(${p.id},this)">
+          ${isFav?'&#9829;':'&#9825;'}
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-price">${fmtPrice(p.price)}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-city">📍 ${p.city}</div>
+      </div>
+    `;
+    card.onclick = () => openDetail(p);
+    grid.appendChild(card);
+  });
+}
+
+function toggleFav(id, btn) {
+  if (favorites[id]) { delete favorites[id]; btn.innerHTML='&#9825;'; btn.classList.remove('active'); }
+  else { favorites[id]=true; btn.innerHTML='&#9829;'; btn.classList.add('active'); }
+  localStorage.setItem('favs', JSON.stringify(favorites));
+}
+
+function setSort(type, btn) {
+  activeSort = type;
+  document.querySelectorAll('.sort-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterProducts();
+}
+
+// --- FILTER MODAL ---
+function openFilter() {
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('filterSheet').classList.add('show');
+}
+function closeFilter() {
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('filterSheet').classList.remove('show');
+}
+function applyFilter() {
+  const from = parseFloat(document.getElementById('priceFrom').value)||0;
+  const to = parseFloat(document.getElementById('priceTo').value)||Infinity;
+  filterPriceFrom = from; filterPriceTo = to;
+  filterCity = document.getElementById('citySelect').value;
+  // sync category tab
+  activeCategory = filterCat;
+  document.querySelectorAll('.cat-btn').forEach(b=>{ if(b.textContent===activeCategory) b.classList.add('active'); else b.classList.remove('active'); });
+  filterProducts();
+  closeFilter();
+}
+
+// --- PRODUCT DETAIL ---
+function openDetail(p) {
+  currentProduct = p;
+  const seller = SELLERS[p.id % SELLERS.length];
+  document.getElementById('detailImg').textContent = getEmoji(p);
+  document.getElementById('detailLot').textContent = 'ЛОТ №' + p.id;
+  document.getElementById('detailTitle').textContent = p.name;
+  document.getElementById('detailPrice').textContent = fmtPrice(p.price);
+  document.getElementById('sellerAvatar').textContent = seller[0];
+  document.getElementById('sellerName').textContent = seller;
+  document.getElementById('infoCategory').textContent = p.category;
+  document.getElementById('infoCity').textContent = p.city;
+  document.getElementById('infoId').textContent = p.id;
+  const isFav = !!favorites[p.id];
+  const fb = document.getElementById('favDetailBtn');
+  fb.innerHTML = isFav ? '&#9829;' : '&#9825;';
+  fb.className = 'fav-detail-btn' + (isFav?' active':'');
+  openPage('detailPage');
+}
+
+function toggleFavDetail() {
+  if (!currentProduct) return;
+  const fb = document.getElementById('favDetailBtn');
+  if (favorites[currentProduct.id]) {
+    delete favorites[currentProduct.id];
+    fb.innerHTML = '&#9825;'; fb.classList.remove('active');
+  } else {
+    favorites[currentProduct.id] = true;
+    fb.innerHTML = '&#9829;'; fb.classList.add('active');
+  }
+  localStorage.setItem('favs', JSON.stringify(favorites));
+}
+
+function shareProduct() {
+  if (!currentProduct) return;
+  const url = `https://t.me/perehvat_store_bot/app?startapp=${currentProduct.id}`;
+  if (tg?.shareMessage) {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(currentProduct.name)}`);
+  } else {
+    navigator.clipboard?.writeText(url);
+  }
+}
+
+// --- ORDER ---
+function openOrder() {
+  if (!currentProduct) return;
+  document.getElementById('orderProduct').textContent = currentProduct.name;
+  document.getElementById('orderPrice').textContent = fmtPrice(currentProduct.price);
+  openPage('orderPage');
+}
+
+function selectDelivery(type, el) {
+  currentDelivery = type;
+  document.querySelectorAll('.delivery-opt').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('addressLabel').textContent = type==='sdek' ? 'ПВЗ СДЭК (город)' : 'Город (самовывоз)';
+}
+
+function submitOrder() {
+  const name = document.getElementById('orderName').value.trim();
+  const phone = document.getElementById('orderPhone').value.trim();
+  const address = document.getElementById('orderAddress').value.trim();
+  if (!name || !phone || !address) {
+    alert('Пожалуйста, заполните все поля');
+    return;
+  }
+  const orderData = {
+    action: 'order',
+    product_id: currentProduct.id,
+    product_name: currentProduct.name,
+    price: currentProduct.price,
+    delivery: currentDelivery === 'sdek' ? 'Доставка СДЭК' : 'Самовывоз',
+    full_name: name,
+    phone: phone,
+    address: address
+  };
+  if (tg?.sendData) {
+    tg.sendData(JSON.stringify(orderData));
+  } else {
+    alert('Заявка отправлена! (демо режим)');
+    closePage('orderPage');
+    closePage('detailPage');
+  }
+}
+
+// --- TABS ---
+function switchTab(tab, btnEl) {
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  if (tab === 'favorites') {
+    renderFavorites();
+    openPage('favoritesPage');
+  } else if (tab === 'profile') {
+    openPage('profilePage');
+  }
+}
+
+function renderFavorites() {
+  const favList = PRODUCTS.filter(p=>favorites[p.id]);
+  const el = document.getElementById('favContent');
+  if (!favList.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">♥️</div><div class="empty-title">Пока пусто</div><div class="empty-sub">Добавляйте товары в избранное, нажимая ♥</div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="grid" style="padding:12px"></div>';
+  renderGrid(favList, el.querySelector('.grid').id || (() => { el.querySelector('.grid').id='favGrid'; return 'favGrid'; })());
+}
+
+// --- PAGE NAV ---
+function openPage(id) { document.getElementById(id).classList.add('show'); }
+function closePage(id) {
+  document.getElementById(id).classList.remove('show');
+  if (id==='favoritesPage'||id==='profilePage') {
+    document.querySelectorAll('.nav-item').forEach((b,i)=>{ if(i===0) b.classList.add('active'); else b.classList.remove('active'); });
+  }
+}
+
+// --- THEME ---
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+}
+
+// Handle back button from TG
+if (tg) {
+  tg.BackButton.onClick(() => {
+    const pages = ['orderPage','detailPage','favoritesPage','profilePage'];
+    for (const pid of pages) {
+      if (document.getElementById(pid).classList.contains('show')) {
+        closePage(pid);
+        return;
+      }
+    }
+  });
+  // Show/hide back button
+  const observer = new MutationObserver(() => {
+    const anyOpen = ['orderPage','detailPage','favoritesPage','profilePage']
+      .some(id => document.getElementById(id).classList.contains('show'));
+    anyOpen ? tg.BackButton.show() : tg.BackButton.hide();
+  });
+  ['orderPage','detailPage','favoritesPage','profilePage'].forEach(id => {
+    observer.observe(document.getElementById(id), {attributes:true});
+  });
+}
+
+init();
+</script>
+</body>
+</html>
