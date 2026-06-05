@@ -762,15 +762,36 @@ var IMG_MAP={
 };
 
 function getProductImg(p){
-  var n=p.name,best=null,bestLen=0;
-  for(var k in IMG_MAP){if(n.indexOf(k)>=0&&k.length>bestLen){best=IMG_MAP[k];bestLen=k.length;}}
-  if(!best)return null;
-  var c='0';
-  if(n.indexOf('Black')>=0||n.indexOf('Midnight')>=0)c='1';
-  else if(n.indexOf('Silver')>=0||n.indexOf('White')>=0)c='0';
-  else if(n.indexOf('Green')>=0)c='2';
-  else if(n.indexOf('Blue')>=0)c='3';
-  return 'https://img.appledb.dev/device@256/'+best+'/'+c+'.png';
+  var n=p.name;
+  if(n.includes('iPhone 17 Pro'))return 'imgs/iphone17pro.png';
+  if(n.includes('iPhone 17'))return 'imgs/iphone17.png';
+  if(n.includes('iPhone 16 Pro Max'))return 'imgs/iphone16promax.png';
+  if(n.includes('iPhone 16 Pro'))return 'imgs/iphone16pro.png';
+  if(n.includes('iPhone 16e'))return 'imgs/iphone16.png';
+  if(n.includes('iPhone 16 Plus')||n.includes('iPhone 16,'))return 'imgs/iphone16.png';
+  if(n.includes('iPhone 16'))return 'imgs/iphone16.png';
+  if(n.includes('iPhone 15 Pro Max'))return 'imgs/iphone15promax.png';
+  if(n.includes('iPhone 15 Pro'))return 'imgs/iphone15pro.png';
+  if(n.includes('iPhone 15 Plus')||n.includes('iPhone 15'))return 'imgs/iphone15.png';
+  if(n.includes('iPhone 14 Pro'))return 'imgs/iphone14pro.png';
+  if(n.includes('iPhone 14'))return 'imgs/iphone14.png';
+  if(n.includes('iPhone 13 Pro'))return 'imgs/iphone13pro.png';
+  if(n.includes('iPhone 13'))return 'imgs/iphone13.png';
+  if(n.includes('iPhone 12 Pro'))return 'imgs/iphone12pro.png';
+  if(n.includes('iPhone 12'))return 'imgs/iphone12.png';
+  if(n.includes('iPhone 11'))return 'imgs/iphone11.png';
+  if(n.includes('iPhone XR'))return 'imgs/iphonexr.png';
+  if(n.includes('Watch Ultra'))return 'imgs/watchultra.png';
+  if(n.includes('Watch 10')||n.includes('Watch 9')||n.includes('Watch 8'))return 'imgs/watch10.png';
+  if(n.includes('Watch 7'))return 'imgs/watch7.png';
+  if(n.includes('Watch 3'))return 'imgs/watch3.png';
+  if(n.includes('Watch'))return 'imgs/watch10.png';
+  if(n.includes('AirPods Max'))return 'imgs/airpodsmax.png';
+  if(n.includes('AirPods Pro'))return 'imgs/airpodspro.png';
+  if(n.includes('AirPods'))return 'imgs/airpods4.png';
+  if(n.includes('iPad Mini')||n.includes('iPad mini'))return 'imgs/ipadmini6.png';
+  if(n.includes('MacBook'))return 'imgs/macbookpro14.png';
+  return null;
 }
 
 function imgTag(p){
