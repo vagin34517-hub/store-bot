@@ -128,7 +128,17 @@ body{
   position:relative;width:100%;aspect-ratio:1;
   background:linear-gradient(135deg,var(--bg),var(--border));
   display:flex;align-items:center;justify-content:center;
-  font-size:52px;
+  font-size:52px;overflow:hidden;
+}
+.card-img img{
+  width:80%;height:80%;object-fit:contain;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.18));
+  transition:transform .2s;
+}
+.card:active .card-img img{transform:scale(.93)}
+.det-img img{
+  width:200px;height:200px;object-fit:contain;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.2));
 }
 .badge-new{
   position:absolute;top:8px;left:8px;
@@ -610,6 +620,32 @@ const CITIES=['Москва','Санкт-Петербург','Краснодар
 const SELLERS=['Артём Чиков','Иван Петров','Олег Смирнов','Наташа Козлова','Дима Волков','Сергей Кузнецов','Алина Морозова','Михаил Лебедев','Юлия Соколова','Андрей Новиков'];
 const CATS=['Все','iPhone','iPad','MacBook','Watch','AirPods','Прочее'];
 const EMOJI={iPhone:'📱',iPad:'📲',MacBook:'💻',Watch:'⌚',AirPods:'🎧',Прочее:'🔹'};
+const IMGS={
+  'iPhone XR':'iPhone11,8',
+  'iPhone 11 Pro Max':'iPhone12,5','iPhone 11 Pro':'iPhone12,3','iPhone 11':'iPhone12,1',
+  'iPhone 12 mini':'iPhone13,1','iPhone 12 Pro Max':'iPhone13,4','iPhone 12 Pro':'iPhone13,3','iPhone 12':'iPhone13,2',
+  'iPhone 13 mini':'iPhone14,4','iPhone 13 Pro Max':'iPhone14,3','iPhone 13 Pro':'iPhone14,2','iPhone 13':'iPhone14,5',
+  'iPhone 14 Pro Max':'iPhone15,3','iPhone 14 Pro':'iPhone15,2','iPhone 14 Plus':'iPhone14,8','iPhone 14':'iPhone14,7',
+  'iPhone 15 Pro Max':'iPhone16,4','iPhone 15 Pro':'iPhone16,3','iPhone 15 Plus':'iPhone15,5','iPhone 15':'iPhone15,4',
+  'iPhone 16e':'iPhone17,5','iPhone 16 Pro Max':'iPhone17,2','iPhone 16 Pro':'iPhone17,1','iPhone 16 Plus':'iPhone16,2','iPhone 16':'iPhone16,1',
+  'iPhone 17 Pro':'iPhone18,3','iPhone 17':'iPhone18,1',
+  'iPad Mini 6':'iPad14,1','iPad mini 6':'iPad14,1',
+  'MacBook Pro 14 2024':'Mac16,1','MacBook Pro':'Mac15,7','MacBook Air':'Mac14,2',
+  'Apple Watch 10':'Watch7,1','Apple Watch Ultra':'Watch7,3','Apple Watch 7':'Watch6,6','Apple Watch 3':'Watch3,2',
+  'AirPods Pro 3':'AirPodsPro2,1','AirPods Pro 2':'AirPodsPro2,1','AirPods Max 2':'AirPodsMax2,1','AirPods Max':'AirPodsMax1,1','AirPods 4':'AirPodsSE,2'
+};
+function getImg(name){
+  var best=null,bestLen=0;
+  for(var k in IMGS){if(name.indexOf(k)>=0&&k.length>bestLen){best=IMGS[k];bestLen=k.length;}}
+  if(!best)return null;
+  var c='0';
+  if(name.indexOf('Black')>=0||name.indexOf('Midnight')>=0)c='Midnight';
+  else if(name.indexOf('Silver')>=0)c='Silver';
+  else if(name.indexOf('White')>=0)c='Silver';
+  else if(name.indexOf('Green')>=0)c='Green';
+  else if(name.indexOf('Blue')>=0)c='Blue';
+  return 'https://img.appledb.dev/device@256/'+best+'/'+c+'.png';
+}
 
 const PRODUCTS=[
   {id:1554,name:'iPhone 16, 128gb',price:42500,category:'iPhone',isNew:true},
@@ -734,6 +770,41 @@ function init(){
 function fmt(n){return n.toLocaleString('ru-RU')+' ₽'}
 function emoji(p){return EMOJI[p.category]||'📦'}
 
+var IMG_MAP={
+  'iPhone XR':'iPhone11,8',
+  'iPhone 11 Pro Max':'iPhone12,5','iPhone 11 Pro':'iPhone12,3','iPhone 11':'iPhone12,1',
+  'iPhone 12 mini':'iPhone13,1','iPhone 12 Pro Max':'iPhone13,4','iPhone 12 Pro':'iPhone13,3','iPhone 12':'iPhone13,2',
+  'iPhone 13 mini':'iPhone14,4','iPhone 13 Pro Max':'iPhone14,3','iPhone 13 Pro':'iPhone14,2','iPhone 13':'iPhone14,5',
+  'iPhone 14 Pro Max':'iPhone15,3','iPhone 14 Pro':'iPhone15,2','iPhone 14 Plus':'iPhone14,8','iPhone 14':'iPhone14,7',
+  'iPhone 15 Pro Max':'iPhone16,4','iPhone 15 Pro':'iPhone16,3','iPhone 15 Plus':'iPhone15,5','iPhone 15':'iPhone15,4',
+  'iPhone 16e':'iPhone17,5','iPhone 16 Pro Max':'iPhone17,2','iPhone 16 Pro':'iPhone17,1','iPhone 16 Plus':'iPhone16,2','iPhone 16':'iPhone16,1',
+  'iPhone 17 Pro':'iPhone18,3','iPhone 17':'iPhone18,1',
+  'iPad Mini 6':'iPad14,1','iPad mini 6':'iPad14,1',
+  'MacBook Pro 14 2024':'Mac16,1','MacBook Pro':'Mac15,7','MacBook Air':'Mac14,2',
+  'Apple Watch 10':'Watch7,1','Apple Watch Ultra':'Watch7,3','Apple Watch 7':'Watch6,6','Apple Watch 3':'Watch3,2',
+  'AirPods Pro 3':'AirPodsPro2,1','AirPods Pro 2':'AirPodsPro2,1',
+  'AirPods Max 2':'AirPodsMax2,1','AirPods Max':'AirPodsMax1,1',
+  'AirPods 4':'AirPodsSE,2'
+};
+
+function getProductImg(p){
+  var n=p.name,best=null,bestLen=0;
+  for(var k in IMG_MAP){if(n.indexOf(k)>=0&&k.length>bestLen){best=IMG_MAP[k];bestLen=k.length;}}
+  if(!best)return null;
+  var color='0';
+  if(n.indexOf('Black')>=0||n.indexOf('Midnight')>=0)color='Midnight';
+  else if(n.indexOf('Silver')>=0||n.indexOf('White')>=0)color='Silver';
+  else if(n.indexOf('Green')>=0)color='Green';
+  else if(n.indexOf('Blue')>=0)color='Blue';
+  return 'https://img.appledb.dev/device@256/'+best+'/'+color+'.png';
+}
+
+function imgTag(p){
+  var src=getProductImg(p),em=emoji(p);
+  if(src){var el=document.createElement('img');el.src=src;el.alt='';el.style.cssText='width:80%;height:80%;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(0,0,0,.18))';el.onerror=function(){el.style.display='none';el.nextElementSibling.style.display='block';};return el.outerHTML+'<span style="display:none;font-size:52px">'+em+'</span>';}
+  return '<span style="font-size:52px">'+em+'</span>';
+}
+
 function getList(){
   const q=document.getElementById('searchInput').value.toLowerCase();
   let list=PRODUCTS.filter(p=>{
@@ -761,7 +832,7 @@ function render(){
     d.className='card';
     d.innerHTML=`
       <div class="card-img">
-        <span style="font-size:52px">${emoji(p)}</span>
+        ${imgTag(p)}
         ${p.isNew?'<span class="badge-new">НОВИНКА</span>':''}
         <button class="fav-btn${isFav?' liked':''}" onclick="event.stopPropagation();toggleFav(${p.id},this)">${isFav?'♥':'♡'}</button>
       </div>
@@ -802,7 +873,9 @@ function applyFilter(){
 // ── DETAIL ──
 function openDet(p){
   cur=p;
-  document.getElementById('detImg').textContent=emoji(p);
+  var _src=getProductImg(p),_di=document.getElementById('detImg');
+  if(_src){var _im=document.createElement('img');_im.src=_src;_im.alt='';_im.style.cssText='width:200px;height:200px;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.2))';_im.onerror=function(){_di.textContent=emoji(p);};_di.innerHTML='';_di.appendChild(_im);}
+  else{_di.textContent=emoji(p);}
   document.getElementById('detLot').textContent='ЛОТ №'+p.id;
   document.getElementById('detName').textContent=p.name;
   document.getElementById('detPrice').textContent=fmt(p.price);
